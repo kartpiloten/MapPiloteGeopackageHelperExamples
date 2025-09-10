@@ -1,0 +1,56 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35818.85
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapPiloteBulkLoadPerformaceTester", "MapPiloteBulkLoadPerformaceTester\MapPiloteBulkLoadPerformaceTester.csproj", "{3E6692C1-47A6-4294-9B4E-AC5DB733C0F7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapPiloteGeopackageHelperHelloWorld", "MapPiloteGeopackageHelperHelloWorld\MapPiloteGeopackageHelperHelloWorld.csproj", "{5335D80F-471E-4A48-BED3-E163F949F35E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapPiloteGeopackageHelperSchemaBrowser", "MapPiloteGeopackageHelperSchemaBrowser\MapPiloteGeopackageHelperSchemaBrowser.csproj", "{30F69021-96B7-C6CF-CFEB-51C43A9052EC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapPiloteFluentApiExample", "MapPiloteFluentApiExample\MapPiloteFluentApiExample.csproj", "{DF9258D8-C6E8-3B60-56A6-71DDBA3690DD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8EC462FD-D22E-90A8-E5CE-7E832BA40C5D}"
+	ProjectSection(SolutionItems) = preProject
+		Licens.txt = Licens.txt
+		README.md = README.md
+		SolutionNotesAndTodos.txt = SolutionNotesAndTodos.txt
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapPiloteLargeDatasetUploadExample", "MapPiloteLargeDatasetUploadExample\MapPiloteLargeDatasetUploadExample.csproj", "{BB47C08D-0318-42FD-ABA0-5039298FC41D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3E6692C1-47A6-4294-9B4E-AC5DB733C0F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3E6692C1-47A6-4294-9B4E-AC5DB733C0F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3E6692C1-47A6-4294-9B4E-AC5DB733C0F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3E6692C1-47A6-4294-9B4E-AC5DB733C0F7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5335D80F-471E-4A48-BED3-E163F949F35E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5335D80F-471E-4A48-BED3-E163F949F35E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5335D80F-471E-4A48-BED3-E163F949F35E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5335D80F-471E-4A48-BED3-E163F949F35E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{30F69021-96B7-C6CF-CFEB-51C43A9052EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30F69021-96B7-C6CF-CFEB-51C43A9052EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30F69021-96B7-C6CF-CFEB-51C43A9052EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30F69021-96B7-C6CF-CFEB-51C43A9052EC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DF9258D8-C6E8-3B60-56A6-71DDBA3690DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF9258D8-C6E8-3B60-56A6-71DDBA3690DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF9258D8-C6E8-3B60-56A6-71DDBA3690DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF9258D8-C6E8-3B60-56A6-71DDBA3690DD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BB47C08D-0318-42FD-ABA0-5039298FC41D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB47C08D-0318-42FD-ABA0-5039298FC41D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB47C08D-0318-42FD-ABA0-5039298FC41D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB47C08D-0318-42FD-ABA0-5039298FC41D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D4921FC5-20D6-4517-9241-53C3846874FF}
+	EndGlobalSection
+EndGlobal
