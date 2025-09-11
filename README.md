@@ -5,7 +5,7 @@ This repository contains comprehensive examples, tutorials, and performance test
 [![NuGet](https://img.shields.io/nuget/v/MapPiloteGeopackageHelper.svg)](https://www.nuget.org/packages/MapPiloteGeopackageHelper/)
 [![.NET](https://img.shields.io/badge/.NET-9.0-blue.svg)](https://dotnet.microsoft.com/download)
 
-## ?? Quick Start
+## Quick Start
 
 The **MapPiloteGeopackageHelper** library provides modern .NET APIs for creating, reading, and bulk-loading GeoPackage (GPKG) data using SQLite and NetTopologySuite.
 
@@ -43,7 +43,7 @@ await foreach (var city in layer.ReadFeaturesAsync(
 }
 ```
 
-## ?? Example Projects
+## Example Projects
 
 | Project | Description | API Style | Complexity |
 |---------|-------------|-----------|------------|
@@ -92,7 +92,7 @@ Advanced spatial operations with:
 - Buffer queries and spatial filtering
 - Real-world performance scenarios across Sweden
 
-## ?? API Comparison
+## API Comparison
 
 ### Modern API (Recommended)
 ```csharp
@@ -111,7 +111,7 @@ GeopackageLayerCreateHelper.CreateGeopackageLayer(path, name, schema);
 CGeopackageAddDataHelper.BulkInsertFeatures(path, name, features);
 ```
 
-## ? Library Features
+## Library Features
 
 | Feature | Description | Example |
 |---------|-------------|---------|
@@ -125,7 +125,7 @@ CGeopackageAddDataHelper.BulkInsertFeatures(path, name, features);
 | **CRUD Operations** | Count, Delete with conditions | `await layer.DeleteAsync("status = 'old'")` |
 | **Spatial Indexing** | Optimized spatial queries | `CreateSpatialIndex: true` |
 
-## ????? Running the Examples
+## Running the Examples
 
 ### Prerequisites
 - [.NET 9.0 SDK](https://dotnet.microsoft.com/download)
@@ -164,7 +164,7 @@ cd ../MapPiloteLargeDatasetUploadExample
 dotnet run
 ```
 
-## ?? Sample Data
+## Sample Data
 
 The repository includes sample GeoPackage files:
 - **AdmBordersSweden.gpkg** - Swedish administrative boundaries
@@ -177,7 +177,7 @@ All generated `.gpkg` files can be opened in:
 - **FME**
 - Any OGC GeoPackage-compatible software
 
-## ?? Reference Links
+## Reference Links
 
 ### GeoPackage Specification
 - **[GeoPackage Encoding Standard](https://www.geopackage.org/spec/)** - Official OGC specification
@@ -193,7 +193,7 @@ All generated `.gpkg` files can be opened in:
 - **[API Documentation](https://github.com/kartpiloten/MapPiloteGeopackageHelper/wiki)** - Full reference
 - **[NetTopologySuite](https://github.com/NetTopologySuite/NetTopologySuite)** - Geometry library
 
-## ?? What This Library Does
+## What This Library Does
 
 - ? **Creates** GeoPackages with required OGC core tables  
 - ? **Manages** layers (tables) with geometry + custom attribute columns  
@@ -203,22 +203,22 @@ All generated `.gpkg` files can be opened in:
 - ? **Enables** schema inspection and validation  
 - ? **Optimizes** spatial queries with R-tree indexing
 
-## ?? System Requirements
+## System Requirements
 
 - **.NET 9.0** or later
 - **Windows, macOS, or Linux**
 - **SQLite** (included via Microsoft.Data.Sqlite)
 - **NetTopologySuite** for geometry operations
 
-## ?? Contributing
+## Contributing
 
 This is an examples repository. For library issues or feature requests, please visit the main [MapPiloteGeopackageHelper repository](https://github.com/kartpiloten/MapPiloteGeopackageHelper).
 
-## ?? License
+## License
 
 MIT License - see individual project files for full license text.
 
 ---
 
-**?? Ready to get started?** Begin with the **HelloWorld** example and work your way up to the advanced spatial indexing examples!
+**Ready to get started?** Begin with the **HelloWorld** example and work your way up to the advanced spatial indexing examples!
 
