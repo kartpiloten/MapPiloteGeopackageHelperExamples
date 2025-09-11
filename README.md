@@ -47,22 +47,22 @@ await foreach (var city in layer.ReadFeaturesAsync(
 
 | Project | Description | API Style | Complexity |
 |---------|-------------|-----------|------------|
-| **[HelloWorld](MapPiloteGeopackageHelperHelloWorld/)** | Step-by-step tutorial showing basic operations | Traditional | ? Beginner |
-| **[FluentApi](MapPiloteFluentApiExample/)** | Comprehensive modern API demonstration | Modern | ?? Intermediate |
-| **[SchemaBrowser](MapPiloteGeopackageHelperSchemaBrowser/)** | Inspect existing GeoPackage files and metadata | Analysis | ?? Intermediate |
-| **[BulkLoadTester](MapPiloteBulkLoadPerformaceTester/)** | Performance comparison between insertion methods | Benchmarks | ??? Advanced |
-| **[LargeDataset](MapPiloteLargeDatasetUploadExample/)** | Spatial index performance with large datasets | Performance | ??? Advanced |
+| **[HelloWorld](MapPiloteGeopackageHelperHelloWorld/)** | Step-by-step tutorial showing basic operations | Traditional |  Beginner |
+| **[FluentApi](MapPiloteFluentApiExample/)** | Comprehensive modern API demonstration | Modern |  Intermediate |
+| **[SchemaBrowser](MapPiloteGeopackageHelperSchemaBrowser/)** | Inspect existing GeoPackage files and metadata | Analysis |  Intermediate |
+| **[BulkLoadTester](MapPiloteBulkLoadPerformaceTester/)** | Performance comparison between insertion methods | Benchmarks |  Advanced |
+| **[LargeDataset](MapPiloteLargeDatasetUploadExample/)** | Spatial index performance with large datasets | Performance |  Advanced |
 
 ### Project Details
 
-#### ?? MapPiloteGeopackageHelperHelloWorld
+####  MapPiloteGeopackageHelperHelloWorld
 Perfect starting point! Shows traditional API usage with:
 - Creating GeoPackages and layers
 - Inserting individual points
 - Bulk operations
 - Reading data back
 
-#### ?? MapPiloteFluentApiExample  
+####  MapPiloteFluentApiExample  
 Modern async/await patterns featuring:
 - Fluent API chains with `GeoPackage.OpenAsync()`
 - Progress reporting during bulk operations
@@ -70,7 +70,7 @@ Modern async/await patterns featuring:
 - CRUD operations (Create, Read, Update, Delete)
 - Real Swedish cities dataset
 
-#### ?? MapPiloteGeopackageHelperSchemaBrowser
+#### MapPiloteGeopackageHelperSchemaBrowser
 Essential for working with unknown GeoPackage files:
 - Layer discovery and metadata extraction
 - Column schema inspection
@@ -78,14 +78,14 @@ Essential for working with unknown GeoPackage files:
 - Sample data browsing
 - Includes sample Swedish administrative borders
 
-#### ? MapPiloteBulkLoadPerformaceTester
+#### MapPiloteBulkLoadPerformaceTester
 Performance comparison demonstrating:
 - Single-row vs bulk insert speed differences
 - Timing measurements and throughput analysis
 - File size comparisons
 - Configurable dataset generation
 
-#### ?? MapPiloteLargeDatasetUploadExample
+####  MapPiloteLargeDatasetUploadExample
 Advanced spatial operations with:
 - Large dataset generation (100k+ points)
 - Spatial index creation and performance testing
