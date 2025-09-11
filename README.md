@@ -171,8 +171,8 @@ The repository includes sample GeoPackage files:
 - **SwedenBorder.gpkg** - National boundary for spatial filtering
 - Generated files from examples (cities, pollution data, etc.)
 
-All generated `.gpkg` files can be opened in:
-- **QGIS** (recommended)
+All generated `.gpkg` files should open in:
+- **QGIS** (recommended and tested)
 - **ArcGIS**
 - **FME**
 - Any OGC GeoPackage-compatible software
@@ -195,13 +195,13 @@ All generated `.gpkg` files can be opened in:
 
 ## What This Library Does
 
-- ? **Creates** GeoPackages with required OGC core tables  
-- ? **Manages** layers (tables) with geometry + custom attribute columns  
-- ? **Bulk writes** features with validation and progress tracking  
-- ? **Streams** features back with filtering, paging, and sorting  
-- ? **Provides** modern async patterns with cancellation support  
-- ? **Enables** schema inspection and validation  
-- ? **Optimizes** spatial queries with R-tree indexing
+-  **Creates** GeoPackages with required OGC core tables  
+-  **Manages** layers (tables) with geometry + custom attribute columns  
+-  **Bulk writes** features with validation and progress tracking  
+-  **Streams** features back with filtering, paging, and sorting  
+-  **Provides** modern async patterns with cancellation support  
+-  **Enables** schema inspection and validation  
+-  **Optimizes** spatial queries with R-tree indexing
 
 ## System Requirements
 
