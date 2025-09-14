@@ -156,10 +156,6 @@ dotnet run
 cd ../MapPiloteFluentApiExample
 dotnet run
 
-# Learn about optional callback patterns
-cd ../MapPiloteGeoPackageOptionalCallbackPattern
-dotnet run
-
 # Inspect sample data
 cd ../MapPiloteGeopackageHelperSchemaBrowser
 dotnet run
