@@ -49,20 +49,21 @@ await foreach (var city in layer.ReadFeaturesAsync(
 |---------|-------------|-----------|------------|
 | **[HelloWorld](MapPiloteGeopackageHelperHelloWorld/)** | Step-by-step tutorial showing basic operations | Traditional | ? Beginner |
 | **[FluentApi](MapPiloteFluentApiExample/)** | Comprehensive modern API demonstration | Modern | ?? Intermediate |
+| **[OptionalCallbackPattern](MapPiloteGeoPackageOptionalCallbackPattern/)** | IProgress<T> callback pattern tutorial | Educational | ?? Intermediate |
 | **[SchemaBrowser](MapPiloteGeopackageHelperSchemaBrowser/)** | Inspect existing GeoPackage files and metadata | Analysis | ?? Intermediate |
 | **[BulkLoadTester](MapPiloteBulkLoadPerformaceTester/)** | Performance comparison between insertion methods | Benchmarks | ??? Advanced |
 | **[LargeDataset](MapPiloteLargeDatasetUploadExample/)** | Spatial index performance with large datasets | Performance | ??? Advanced |
 
 ### Project Details
 
-#### ?? MapPiloteGeopackageHelperHelloWorld
+#### MapPiloteGeopackageHelperHelloWorld
 Perfect starting point! Shows traditional API usage with:
 - Creating GeoPackages and layers
 - Inserting individual points
 - Bulk operations
 - Reading data back
 
-#### ?? MapPiloteFluentApiExample  
+#### MapPiloteFluentApiExample  
 Modern async/await patterns featuring:
 - Fluent API chains with `GeoPackage.OpenAsync()`
 - Progress reporting during bulk operations
@@ -70,7 +71,17 @@ Modern async/await patterns featuring:
 - CRUD operations (Create, Read, Update, Delete)
 - Real Swedish cities dataset
 
-#### ?? MapPiloteGeopackageHelperSchemaBrowser
+#### MapPiloteGeoPackageOptionalCallbackPattern
+Educational tutorial on the Optional Callback Pattern:
+- Understanding `IProgress<T>` and when to use it
+- Silent operations without callbacks
+- Simple progress callbacks for monitoring
+- Advanced progress visualization with bars and ETAs
+- Custom business logic triggered by progress
+- Conditional callback usage based on runtime decisions
+- Best practices for callback implementation
+
+#### MapPiloteGeopackageHelperSchemaBrowser
 Essential for working with unknown GeoPackage files:
 - Layer discovery and metadata extraction
 - Column schema inspection
@@ -78,14 +89,14 @@ Essential for working with unknown GeoPackage files:
 - Sample data browsing
 - Includes sample Swedish administrative borders
 
-#### ? MapPiloteBulkLoadPerformaceTester
+#### MapPiloteBulkLoadPerformaceTester
 Performance comparison demonstrating:
 - Single-row vs bulk insert speed differences
 - Timing measurements and throughput analysis
 - File size comparisons
 - Configurable dataset generation
 
-#### ?? MapPiloteLargeDatasetUploadExample
+#### MapPiloteLargeDatasetUploadExample
 Advanced spatial operations with:
 - Large dataset generation (100k+ points)
 - Spatial index creation and performance testing
@@ -145,6 +156,10 @@ dotnet run
 cd ../MapPiloteFluentApiExample
 dotnet run
 
+# Learn about optional callback patterns
+cd ../MapPiloteGeoPackageOptionalCallbackPattern
+dotnet run
+
 # Inspect sample data
 cd ../MapPiloteGeopackageHelperSchemaBrowser
 dotnet run
@@ -195,13 +210,13 @@ All generated `.gpkg` files can be opened in:
 
 ## What This Library Does
 
-- ? **Creates** GeoPackages with required OGC core tables  
-- ? **Manages** layers (tables) with geometry + custom attribute columns  
-- ? **Bulk writes** features with validation and progress tracking  
-- ? **Streams** features back with filtering, paging, and sorting  
-- ? **Provides** modern async patterns with cancellation support  
-- ? **Enables** schema inspection and validation  
-- ? **Optimizes** spatial queries with R-tree indexing
+- **Creates** GeoPackages with required OGC core tables  
+- **Manages** layers (tables) with geometry + custom attribute columns  
+- **Bulk writes** features with validation and progress tracking  
+- **Streams** features back with filtering, paging, and sorting  
+- **Provides** modern async patterns with cancellation support  
+- **Enables** schema inspection and validation  
+- **Optimizes** spatial queries with R-tree indexing
 
 ## System Requirements
 
