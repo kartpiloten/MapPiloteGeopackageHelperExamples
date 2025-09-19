@@ -27,259 +27,238 @@ using System.Diagnostics;
 using System.Globalization;
 
 // =============================================================
-// Bulk Load Performance Tester for MapPiloteGeopackageHelper
+// Bulk Insert Performance Comparison Tutorial
 // -------------------------------------------------------------
-// This performance comparison example demonstrates:
-//  1) Single-row insert approach (traditional, slower)
-//  2) Bulk insert approach (modern, faster)
-//  3) Performance metrics and timing comparisons
-//  4) File size analysis between methods
-//  5) Configurable test dataset generation
-// Perfect for benchmarking different insertion strategies!
+// This tutorial demonstrates performance differences between:
+//  1) Single-row inserts (traditional approach)
+//  2) Bulk inserts (modern efficient approach)
+// Learn when and why to use bulk operations for better performance!
 // =============================================================
 
-// Performance comparison between single inserts and bulk insert
+Console.WriteLine("=== Bulk Insert Performance Tutorial ===");
+Console.WriteLine("Comparing single-row vs bulk insert performance with MapPiloteGeopackageHelper");
+Console.WriteLine();
 
-Console.WriteLine("=== MapPilote Bulk Load Performance Tester ===");
+const int TEST_COUNT = 2000; // Manageable size for demonstration
+const int SRID = 3006; // SWEREF99 TM (Sweden)
+const string LAYER_NAME = "test_points";
 
-// Show reference mode at runtime - check the LIBRARY we're testing, not this project
-#if DEBUG
-var helperAssembly = typeof(CMPGeopackageCreateHelper).Assembly;
-var assemblyLocation = helperAssembly.Location;
-var assemblyDirectory = Path.GetDirectoryName(assemblyLocation) ?? "";
+// Output paths
+string singleInsertPath = Path.Combine(Environment.CurrentDirectory, "SingleInsert_Performance.gpkg");
+string bulkInsertPath = Path.Combine(Environment.CurrentDirectory, "BulkInsert_Performance.gpkg");
 
-Console.WriteLine($"  Checking MapPiloteGeopackageHelper library location...");
-Console.WriteLine($"   Assembly: {helperAssembly.FullName}");
-Console.WriteLine($"   Location: {assemblyLocation}");
+// Clean up any existing test files
+TryDelete(singleInsertPath);
+TryDelete(bulkInsertPath);
 
-// Check if we're in a local development environment but using copied assemblies
-var isInTestProjectBin = assemblyLocation.Contains("\\bin\\Debug\\") || 
-                         assemblyLocation.Contains("/bin/Debug/") ||
-                         assemblyLocation.Contains("\\bin\\Release\\") || 
-                         assemblyLocation.Contains("/bin/Release/");
+Console.WriteLine("=== TUTORIAL OVERVIEW ===");
+Console.WriteLine("We'll create identical datasets using two different approaches:");
+Console.WriteLine($"• Dataset size: {TEST_COUNT:N0} points");
+Console.WriteLine($"• Coordinate system: SWEREF99 TM (SRID {SRID})");
+Console.WriteLine($"• Attributes: name, category, value, notes");
+Console.WriteLine();
 
-// Read the MSBuild UseLocalProjects setting from the project
-var projectDir = Path.GetDirectoryName(Environment.CurrentDirectory) ?? "";
-var useLocalProjectsFromBuild = Environment.GetEnvironmentVariable("UseLocalProjects");
-var assemblySize = new FileInfo(assemblyLocation).Length;
-
-// Better detection logic - check multiple indicators
-var isFromNuGet = false;
-var nuGetIndicators = new List<string>();
-
-// Check 1: Direct NuGet cache path
-if (assemblyLocation.Contains("\\.nuget\\packages\\") || 
-    assemblyLocation.Contains("/.nuget/packages/") ||
-    assemblyLocation.Contains("\\packages\\mappilotegeopackagehelper\\") ||
-    assemblyLocation.Contains("/packages/mappilotegeopackagehelper/"))
-{
-    isFromNuGet = true;
-    nuGetIndicators.Add("Direct NuGet cache path");
-}
-
-// Check 2: Look for NuGet restore files in obj folder
-var objFolder = Path.Combine(Environment.CurrentDirectory, "obj");
-if (Directory.Exists(objFolder))
-{
-    var nugetRestoreFiles = Directory.GetFiles(objFolder, "*.nuget.*", SearchOption.AllDirectories);
-    if (nugetRestoreFiles.Length > 0)
-    {
-        nuGetIndicators.Add($"NuGet restore files in obj ({nugetRestoreFiles.Length} files)");
-        
-        // Check if any restore file mentions our package
-        foreach (var file in nugetRestoreFiles.Take(5)) // Check first 5 files
-        {
-            try
-            {
-                var content = File.ReadAllText(file);
-                if (content.Contains("MapPiloteGeopackageHelper", StringComparison.OrdinalIgnoreCase))
-                {
-                    isFromNuGet = true;
-                    nuGetIndicators.Add($"Package found in {Path.GetFileName(file)}");
-                    break;
-                }
-            }
-            catch { /* ignore file read errors */ }
-        }
-    }
-}
-
-// Check 3: Look for .deps.json file which indicates NuGet resolution
-var depsJsonPath = Path.Combine(Path.GetDirectoryName(assemblyLocation) ?? "", 
-                                Path.GetFileNameWithoutExtension(Environment.ProcessPath ?? "") + ".deps.json");
-if (File.Exists(depsJsonPath))
-{
-    try
-    {
-        var depsContent = File.ReadAllText(depsJsonPath);
-        if (depsContent.Contains("MapPiloteGeopackageHelper", StringComparison.OrdinalIgnoreCase))
-        {
-            nuGetIndicators.Add("Found in .deps.json (NuGet dependency)");
-            if (depsContent.Contains("\"type\": \"package\""))
-            {
-                isFromNuGet = true;
-                nuGetIndicators.Add("Confirmed as package dependency in .deps.json");
-            }
-        }
-    }
-    catch { /* ignore file read errors */ }
-}
-
-Console.WriteLine($"   MSBuild UseLocalProjects: {useLocalProjectsFromBuild ?? "not set in environment"}");
-Console.WriteLine($"   NuGet Detection Indicators: {string.Join(", ", nuGetIndicators)}");
-
-if (isFromNuGet)
-{
-    Console.WriteLine("  LIBRARY MODE: Using NUGET MapPiloteGeopackageHelper package");  
-    Console.WriteLine("     Testing against published NuGet package from nuget.org");
-}
-else if (isInTestProjectBin)
-{
-    // When in test project bin, we need to check the build configuration
-    // If UseLocalProjects=false in Directory.Build.props, it's likely NuGet even if copied
-    var directoryBuildProps = Path.Combine(projectDir, "Directory.Build.props");
-    bool useLocalFromProps = true; // default assumption
-    
-    if (File.Exists(directoryBuildProps))
-    {
-        var propsContent = File.ReadAllText(directoryBuildProps);
-        if (propsContent.Contains("<UseLocalProjects") && propsContent.Contains(">false<"))
-        {
-            useLocalFromProps = false;
-        }
-    }
-    
-    if (!useLocalFromProps)
-    {
-        Console.WriteLine("  LIBRARY MODE: Using NUGET MapPiloteGeopackageHelper package");  
-        Console.WriteLine("     Testing against published NuGet package (copied to bin folder)");
-        Console.WriteLine("      Assembly copied from NuGet cache to local bin during build");
-    }
-    else
-    {
-        Console.WriteLine("  LIBRARY MODE: Using LOCAL MapPiloteGeopackageHelper");
-        Console.WriteLine("     Testing against your development code");
-    }
-}
-else
-{
-    Console.WriteLine("  LIBRARY MODE: UNKNOWN - Please check manually");
-    Console.WriteLine($"   Location: {assemblyDirectory}");
-}
-
-// Show additional diagnostic info
-Console.WriteLine($"   Diagnostic info:");
-Console.WriteLine($"   - Is in NuGet cache: {isFromNuGet}");
-Console.WriteLine($"   - Is in bin folder: {isInTestProjectBin}");
-Console.WriteLine($"   - Assembly file size: {assemblySize / 1024.0:F1} KB");
-#else
-Console.WriteLine("  LIBRARY MODE: Using NUGET MapPiloteGeopackageHelper package (Release build)");
-#endif
-
-const int srid = 3006;
-const string layerName = "points";
-const int count = 1_000; // start with 1000 points until everything is running      
-
-var normalPath = Path.Combine(@"C:\temp\", "normal_insert.gpkg");
-var bulkPath = Path.Combine(@"C:\temp\", "bulk_insert.gpkg");
-
-// Clean up old files
-TryDelete(normalPath);
-TryDelete(bulkPath);
-
-// Attribute schema (order matters for per-row insert)
-var attributeOrder = new List<string> { "name", "age", "height", "note" };
-var headers = new Dictionary<string, string>(StringComparer.Ordinal)
+// Define schema for test data
+var schema = new Dictionary<string, string>(StringComparer.Ordinal)
 {
     ["name"] = "TEXT",
-    ["age"] = "INTEGER",
-    ["height"] = "REAL",
-    ["note"] = "TEXT"
+    ["category"] = "TEXT", 
+    ["value"] = "REAL",
+    ["notes"] = "TEXT"
 };
 
-Console.WriteLine("Generating random features...");
-var rnd = new Random(42);
-var features = GenerateRandomFeatures(count, rnd);
-
-// NORMAL INSERT (per feature)
-Console.WriteLine("\n--- Normal insert ---");
-CreateGpkgWithLayer(normalPath, layerName, headers, srid);
-var sw = Stopwatch.StartNew();
-int i = 0;
-foreach (var f in features)
-{
-    // Use empty string for nulls to be treated as NULL by helper
-    var values = new string[attributeOrder.Count];
-    values[0] = f.Attributes.TryGetValue("name", out var name) && name != null ? name : string.Empty;
-    values[1] = f.Attributes.TryGetValue("age", out var age) && age != null ? age : string.Empty;
-    values[2] = f.Attributes.TryGetValue("height", out var height) && height != null ? height : string.Empty;
-    values[3] = f.Attributes.TryGetValue("note", out var note) && note != null ? note : string.Empty;
-
-    CGeopackageAddDataHelper.AddPointToGeoPackage(normalPath, layerName, (Point)f.Geometry!, values);
-
-    i++;
-    if (i % 2000 == 0)
-        Console.Write('.');
-}
-sw.Stop();
+// Generate test dataset
+Console.WriteLine("1. GENERATING TEST DATA");
+Console.WriteLine($"   Creating {TEST_COUNT:N0} random points across Sweden...");
+var testFeatures = GenerateTestFeatures(TEST_COUNT);
+Console.WriteLine($"   SUCCESS: Generated {testFeatures.Count:N0} features");
 Console.WriteLine();
-Report(sw.Elapsed, count, normalPath);
 
-// BULK INSERT
-Console.WriteLine("\n--- Bulk insert ---");
-CreateGpkgWithLayer(bulkPath, layerName, headers, srid);
-sw.Restart();
-CGeopackageAddDataHelper.BulkInsertFeatures(bulkPath, layerName, features, srid: srid, batchSize: 500);
-sw.Stop();
-Report(sw.Elapsed, count, bulkPath);
+// =================================================================
+// METHOD 1: SINGLE-ROW INSERTS (Traditional Approach)
+// =================================================================
+Console.WriteLine("2. METHOD 1: SINGLE-ROW INSERTS");
+Console.WriteLine("   Traditional approach - inserting one feature at a time");
+Console.WriteLine("   Each insert is a separate database transaction");
+Console.WriteLine();
 
-Console.WriteLine("\nDone.");
+CreateEmptyGeoPackage(singleInsertPath, LAYER_NAME, schema);
 
-static List<FeatureRecord> GenerateRandomFeatures(int n, Random rnd)
+var stopwatch = Stopwatch.StartNew();
+int progress = 0;
+
+Console.WriteLine("   Inserting features (one by one):");
+foreach (var feature in testFeatures)
 {
-    var list = new List<FeatureRecord>(n);
-
-    // Swedish national grid extent (SWEREF99 TM)
-    const double minX = 181750.0, minY = 6090250.0, maxX = 1086500.0, maxY = 7689500.0;
-
-    for (int idx = 0; idx < n; idx++)
+    // Extract attributes in the correct order for the traditional API
+    var point = feature.Geometry as Point;
+    var attributeValues = new[]
     {
-        var x = minX + rnd.NextDouble() * (maxX - minX);
-        var y = minY + rnd.NextDouble() * (maxY - minY);
-        var p = new Point(x, y);
+        feature.Attributes.GetValueOrDefault("name") ?? "",
+        feature.Attributes.GetValueOrDefault("category") ?? "",
+        feature.Attributes.GetValueOrDefault("value") ?? "",
+        feature.Attributes.GetValueOrDefault("notes") ?? ""
+    };
 
-        var age = (18 + rnd.Next(63)).ToString(CultureInfo.InvariantCulture); // 18-80
-        var height = (1.50 + rnd.NextDouble() * 0.6).ToString("0.00", CultureInfo.InvariantCulture); // 1.50-2.10
-        string? note = rnd.NextDouble() < 0.2 ? null : (rnd.NextDouble() < 0.5 ? "A" : "B");
+    // Single insert - one database transaction per feature
+    CGeopackageAddDataHelper.AddPointToGeoPackage(singleInsertPath, LAYER_NAME, point!, attributeValues);
 
-        var attrs = new Dictionary<string, string?>(StringComparer.Ordinal)
-        {
-            ["name"] = $"Person_{idx:D5}",
-            ["age"] = age,
-            ["height"] = height,
-            ["note"] = note
-        };
-
-        list.Add(new FeatureRecord(p, attrs));
+    progress++;
+    if (progress % 400 == 0)
+    {
+        var percentage = (double)progress / TEST_COUNT * 100;
+        Console.Write($"\r     Progress: {progress:N0}/{TEST_COUNT:N0} ({percentage:F0}%) ");
     }
+}
+stopwatch.Stop();
+Console.WriteLine($"\r     SUCCESS: Completed {TEST_COUNT:N0} single inserts");
 
-    return list;
+var singleInsertTime = stopwatch.ElapsedMilliseconds;
+var singleInsertRate = TEST_COUNT / Math.Max(stopwatch.Elapsed.TotalSeconds, 0.001);
+var singleInsertSize = new FileInfo(singleInsertPath).Length;
+
+Console.WriteLine($"   Results:");
+Console.WriteLine($"     Time: {singleInsertTime:N0} ms");
+Console.WriteLine($"     Rate: {singleInsertRate:F0} inserts/second");
+Console.WriteLine($"     File size: {singleInsertSize / 1024.0:F1} KB");
+Console.WriteLine();
+
+// =================================================================  
+// METHOD 2: BULK INSERTS (Modern Efficient Approach)
+// =================================================================
+Console.WriteLine("3. METHOD 2: BULK INSERTS");
+Console.WriteLine("   Modern approach - inserting many features in batches");
+Console.WriteLine("   Optimized with transactions and prepared statements");
+Console.WriteLine();
+
+CreateEmptyGeoPackage(bulkInsertPath, LAYER_NAME, schema);
+
+Console.WriteLine("   Bulk inserting all features at once:");
+stopwatch.Restart();
+
+// Bulk insert - optimized for performance
+CGeopackageAddDataHelper.BulkInsertFeatures(
+    geoPackagePath: bulkInsertPath,
+    layerName: LAYER_NAME,
+    features: testFeatures,
+    srid: SRID,
+    batchSize: 500  // Process in batches of 500 for optimal performance
+);
+
+stopwatch.Stop();
+Console.WriteLine($"   SUCCESS: Bulk insert completed");
+
+var bulkInsertTime = stopwatch.ElapsedMilliseconds;
+var bulkInsertRate = TEST_COUNT / Math.Max(stopwatch.Elapsed.TotalSeconds, 0.001);
+var bulkInsertSize = new FileInfo(bulkInsertPath).Length;
+
+Console.WriteLine($"   Results:");
+Console.WriteLine($"     Time: {bulkInsertTime:N0} ms");
+Console.WriteLine($"     Rate: {bulkInsertRate:F0} inserts/second");
+Console.WriteLine($"     File size: {bulkInsertSize / 1024.0:F1} KB");
+Console.WriteLine();
+
+// =================================================================
+// PERFORMANCE ANALYSIS
+// =================================================================
+Console.WriteLine("4. PERFORMANCE ANALYSIS");
+Console.WriteLine("   Comparing the two approaches:");
+Console.WriteLine();
+
+Console.WriteLine($"DETAILED COMPARISON:");
+Console.WriteLine($"   Single-row approach:");
+Console.WriteLine($"     • Time: {singleInsertTime:N0} ms");
+Console.WriteLine($"     • Rate: {singleInsertRate:F0} records/second");
+Console.WriteLine($"     • File: {singleInsertSize / 1024.0:F1} KB");
+Console.WriteLine();
+Console.WriteLine($"   Bulk insert approach:");
+Console.WriteLine($"     • Time: {bulkInsertTime:N0} ms");
+Console.WriteLine($"     • Rate: {bulkInsertRate:F0} records/second");
+Console.WriteLine($"     • File: {bulkInsertSize / 1024.0:F1} KB");
+Console.WriteLine();
+
+if (singleInsertTime > 0 && bulkInsertTime > 0)
+{
+    var timeImprovement = (double)singleInsertTime / bulkInsertTime;
+    var rateImprovement = bulkInsertRate / singleInsertRate;
+    
+    Console.WriteLine($"PERFORMANCE IMPROVEMENT:");
+    Console.WriteLine($"   • Time: {timeImprovement:F1}x faster");
+    Console.WriteLine($"   • Throughput: {rateImprovement:F1}x higher rate");
+    
+    if (timeImprovement > 2.0)
+        Console.WriteLine($"   • Result: Bulk insert is SIGNIFICANTLY faster!");
+    else if (timeImprovement > 1.5)  
+        Console.WriteLine($"   • Result: Bulk insert shows good improvement");
+    else
+        Console.WriteLine($"   • Result: Similar performance (dataset may be too small)");
 }
 
-static void CreateGpkgWithLayer(string path, string layerName, Dictionary<string, string> headers, int srid)
+Console.WriteLine();
+Console.WriteLine("KEY TAKEAWAYS:");
+Console.WriteLine("   • Use BulkInsertFeatures() for inserting multiple records");
+Console.WriteLine("   • Bulk operations use database transactions efficiently");
+Console.WriteLine("   • Performance gains increase with larger datasets");
+Console.WriteLine("   • BatchSize parameter can be tuned for your system");
+Console.WriteLine();
+
+Console.WriteLine($"FILES CREATED:");
+Console.WriteLine($"   • {Path.GetFileName(singleInsertPath)} (single-row method)");
+Console.WriteLine($"   • {Path.GetFileName(bulkInsertPath)} (bulk insert method)");
+Console.WriteLine();
+Console.WriteLine("RECOMMENDATION: Always use bulk operations for multiple inserts!");
+
+// =================================================================
+// Helper Methods
+// =================================================================
+
+static List<FeatureRecord> GenerateTestFeatures(int count)
 {
-    CMPGeopackageCreateHelper.CreateGeoPackage(path, srid);
-    GeopackageLayerCreateHelper.CreateGeopackageLayer(path, layerName, headers, geometryType: "POINT", srid: srid);
+    var random = new Random(42); // Fixed seed for reproducible tests
+    var features = new List<FeatureRecord>();
+    
+    // Swedish coordinate bounds (SWEREF99 TM)
+    const double minX = 250000.0, minY = 6200000.0;
+    const double maxX = 850000.0, maxY = 7400000.0;
+    
+    var categories = new[] { "Residential", "Commercial", "Industrial", "Agricultural", "Forest" };
+    var notes = new[] { "High priority", "Standard", "Low priority", null }; // Include nulls
+    
+    for (int i = 0; i < count; i++)
+    {
+        // Random coordinates within Sweden
+        var x = minX + random.NextDouble() * (maxX - minX);
+        var y = minY + random.NextDouble() * (maxY - minY);
+        var point = new Point(x, y);
+        
+        // Generate realistic attributes
+        var name = $"Point_{i + 1:D5}";
+        var category = categories[random.Next(categories.Length)];
+        var value = Math.Round(random.NextDouble() * 1000, 2);
+        var note = notes[random.Next(notes.Length)];
+        
+        var attributes = new Dictionary<string, string?>(StringComparer.Ordinal)
+        {
+            ["name"] = name,
+            ["category"] = category,
+            ["value"] = value.ToString("F2", CultureInfo.InvariantCulture),
+            ["notes"] = note
+        };
+        
+        features.Add(new FeatureRecord(point, attributes));
+    }
+    
+    return features;
 }
 
-static void Report(TimeSpan elapsed, int n, string filePath)
+static void CreateEmptyGeoPackage(string path, string layerName, Dictionary<string, string> schema)
 {
-    var rps = n / Math.Max(elapsed.TotalSeconds, 1e-9);
-    var size = new FileInfo(filePath).Length;
-    Console.WriteLine($"Inserted {n:N0} rows in {elapsed.TotalSeconds:F2}s ({rps:N0} rows/s). File size: {size / 1024.0 / 1024.0:F2} MB");
+    // Create the GeoPackage file and layer structure
+    CMPGeopackageCreateHelper.CreateGeoPackage(path, SRID);
+    GeopackageLayerCreateHelper.CreateGeopackageLayer(path, layerName, schema, "POINT", SRID);
 }
 
 static void TryDelete(string path)
 {
-    try { if (File.Exists(path)) File.Delete(path); } catch { }
+    try { if (File.Exists(path)) File.Delete(path); } catch { /* Ignore cleanup errors */ }
 }

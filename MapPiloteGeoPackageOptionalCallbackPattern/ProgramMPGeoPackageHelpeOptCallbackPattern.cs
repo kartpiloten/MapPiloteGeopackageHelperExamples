@@ -60,13 +60,6 @@ Console.WriteLine();
 
 try
 {
-    // ========================================================================
-    // SCENARIO 1: No Callback (Silent Operation)
-    // ========================================================================
-    Console.WriteLine("## Scenario 1: No Progress Callback (Silent Operation)");
-    Console.WriteLine("Many operations work fine without progress monitoring:");
-    Console.WriteLine();
-
     using var geoPackage = await GeoPackage.OpenAsync(gpkgPath, srid);
     var schema = new Dictionary<string, string>
     {
@@ -75,13 +68,20 @@ try
         ["value"] = "REAL"
     };
 
-    var layer = await geoPackage.EnsureLayerAsync("example_points", schema, srid);
-    var smallDataset = GenerateSampleData(100); // Small dataset
+    // ========================================================================
+    // SCENARIO 1: No Callback (Silent Operation)
+    // ========================================================================
+    Console.WriteLine("## Scenario 1: No Progress Callback (Silent Operation)");
+    Console.WriteLine("Many operations work fine without progress monitoring:");
+    Console.WriteLine();
+
+    var layer1 = await geoPackage.EnsureLayerAsync("scenario1_points", schema, srid);
+    var smallDataset = GenerateSampleData(100);
 
     Console.WriteLine("Inserting 100 points without progress callback...");
     
     // Note: progress parameter is null - this is the Optional Callback Pattern in action!
-    await layer.BulkInsertAsync(
+    await layer1.BulkInsertAsync(
         smallDataset,
         new BulkInsertOptions(BatchSize: 50),
         progress: null  // <-- Optional callback omitted
@@ -97,6 +97,7 @@ try
     Console.WriteLine("For longer operations, a simple progress callback helps:");
     Console.WriteLine();
 
+    var layer2 = await geoPackage.EnsureLayerAsync("scenario2_points", schema, srid);
     var mediumDataset = GenerateSampleData(500);
 
     Console.WriteLine("Inserting 500 points with simple progress callback...");
@@ -106,7 +107,7 @@ try
         Console.WriteLine($"  Progress: {p.PercentComplete:F1}% ({p.Processed}/{p.Total})")
     );
 
-    await layer.BulkInsertAsync(
+    await layer2.BulkInsertAsync(
         mediumDataset,
         new BulkInsertOptions(BatchSize: 100),
         simpleProgress  // <-- Simple callback provided
@@ -122,9 +123,10 @@ try
     Console.WriteLine("For large operations, rich progress visualization improves UX:");
     Console.WriteLine();
 
-    var largeDataset = GenerateSampleData(1000);
+    var layer3 = await geoPackage.EnsureLayerAsync("scenario3_points", schema, srid);
+    var largeDataset = GenerateSampleData(100000);
     
-    Console.WriteLine("Inserting 1000 points with visual progress bar...");
+    Console.WriteLine("Inserting 100000 points with visual progress bar...");
     
     // Advanced callback with progress bar and ETA
     var startTime = DateTime.Now;
@@ -152,7 +154,7 @@ try
         }
     });
 
-    await layer.BulkInsertAsync(
+    await layer3.BulkInsertAsync(
         largeDataset,
         new BulkInsertOptions(BatchSize: 250, CreateSpatialIndex: true),
         advancedProgress  // <-- Rich callback provided
@@ -168,7 +170,8 @@ try
     Console.WriteLine("Callbacks can trigger business logic, not just UI updates:");
     Console.WriteLine();
 
-    var finalDataset = GenerateSampleData(750);
+    var layer4 = await geoPackage.EnsureLayerAsync("scenario4_points", schema, srid);
+    var finalDataset = GenerateSampleData(75000);
     
     Console.WriteLine("Inserting 750 points with custom business logic callback...");
     
@@ -177,13 +180,13 @@ try
     
     var businessLogicProgress = new Progress<BulkProgress>(p =>
     {
-        // Check for milestone achievements
+        // Check for milestone achievements - this now correctly tracks the current batch only
         foreach (var milestone in milestones)
         {
             if (p.PercentComplete >= milestone && !achievedMilestones.Contains(milestone))
             {
                 achievedMilestones.Add(milestone);
-                Console.WriteLine($"  *** MILESTONE: {milestone}% completed! ({p.Processed:N0} records processed) ***");
+                Console.WriteLine($"  *** MILESTONE: {milestone}% completed! ({p.Processed:N0} of {p.Total:N0} records processed) ***");
                 
                 // Custom business logic could happen here:
                 // - Send notifications
@@ -193,14 +196,14 @@ try
             }
         }
         
-        // Regular progress update
-        if (p.Processed % 100 == 0 || p.IsComplete)
+        // Regular progress update - only show key milestones to reduce noise
+        if (p.Processed % 150 == 0 || p.IsComplete)
         {
             Console.WriteLine($"  Status: {p.Processed:N0}/{p.Total:N0} records ({p.PercentComplete:F1}%)");
         }
     });
 
-    await layer.BulkInsertAsync(
+    await layer4.BulkInsertAsync(
         finalDataset,
         new BulkInsertOptions(BatchSize: 150),
         businessLogicProgress  // <-- Business logic callback
@@ -216,6 +219,7 @@ try
     Console.WriteLine("Sometimes you decide at runtime whether to use a callback:");
     Console.WriteLine();
 
+    var layer5 = await geoPackage.EnsureLayerAsync("scenario5_points", schema, srid);
     var conditionalDataset = GenerateSampleData(300);
     
     // Simulate runtime decision (e.g., based on user preferences, dataset size, etc.)
@@ -227,12 +231,12 @@ try
     
     // Optional callback pattern: pass null or actual callback based on condition
     IProgress<BulkProgress>? conditionalProgress = enableProgressTracking 
-        ? new Progress<BulkProgress>(p => Console.WriteLine($"  Conditional progress: {p.PercentComplete:F0}%"))
+        ? new Progress<BulkProgress>(p => Console.WriteLine($"  Conditional progress: {p.PercentComplete:F0}% ({p.Processed}/{p.Total})"))
         : null;
 
     Console.WriteLine("Inserting with conditional progress callback...");
     
-    await layer.BulkInsertAsync(
+    await layer5.BulkInsertAsync(
         conditionalDataset,
         new BulkInsertOptions(BatchSize: 100),
         conditionalProgress  // <-- null or callback based on runtime condition
@@ -254,9 +258,22 @@ try
     Console.WriteLine("UI RESPONSIVE: Enables responsive UI during long operations");
     Console.WriteLine();
     
-    // Show final statistics
-    var totalCount = await layer.CountAsync();
-    Console.WriteLine($"Total records inserted across all scenarios: {totalCount:N0}");
+    // Show final statistics across all layers
+    var totalCount1 = await layer1.CountAsync();
+    var totalCount2 = await layer2.CountAsync();
+    var totalCount3 = await layer3.CountAsync();
+    var totalCount4 = await layer4.CountAsync();
+    var totalCount5 = await layer5.CountAsync();
+    var grandTotal = totalCount1 + totalCount2 + totalCount3 + totalCount4 + totalCount5;
+    
+    Console.WriteLine($"Records inserted per scenario:");
+    Console.WriteLine($"  Scenario 1 (silent):     {totalCount1:N0} records");
+    Console.WriteLine($"  Scenario 2 (simple):     {totalCount2:N0} records");
+    Console.WriteLine($"  Scenario 3 (visual):     {totalCount3:N0} records");
+    Console.WriteLine($"  Scenario 4 (business):   {totalCount4:N0} records");
+    Console.WriteLine($"  Scenario 5 (conditional): {totalCount5:N0} records");
+    Console.WriteLine($"  TOTAL across all scenarios: {grandTotal:N0} records");
+    Console.WriteLine();
     Console.WriteLine($"GeoPackage saved to: {Path.GetFullPath(gpkgPath)}");
     Console.WriteLine();
     Console.WriteLine("Tutorial completed! You now understand the Optional Callback Pattern.");
