@@ -55,6 +55,7 @@ Each example is designed as a complete tutorial with detailed explanations, real
 | **[SchemaBrowser](MapPiloteGeopackageHelperSchemaBrowser/)** | Exploring existing files | [Intermediate] | Metadata inspection, code generation, data analysis |
 | **[BulkLoadTester](MapPiloteBulkLoadPerformaceTester/)** | Performance comparison | [Advanced] | Bulk vs single inserts, benchmarking, optimization |
 | **[LargeDataset](MapPiloteLargeDatasetUploadExample/)** | Spatial indexing | [Advanced] | Large datasets, spatial queries, index performance |
+| **[WALModeExample](MapPiloteWALModeExample/)** | Journal mode comparison | [Advanced] | WAL vs DELETE mode, concurrency, performance |
 
 ### Recommended Learning Sequence
 
@@ -69,6 +70,7 @@ Each example is designed as a complete tutorial with detailed explanations, real
 
 **Advanced Patterns**
 6. **OptionalCallbackPattern** - Implement progress reporting and callbacks
+7. **WALModeExample** - Understand SQLite journal modes and concurrency
 
 ## Detailed Project Descriptions
 
@@ -165,6 +167,22 @@ Each example is designed as a complete tutorial with detailed explanations, real
 - Conditional callback implementation
 - UI responsiveness techniques
 
+### WALModeExample Tutorial
+**Understanding SQLite journal modes and concurrency**
+- Comprehensive comparison of WAL vs DELETE mode
+- Performance differences in read/write scenarios  
+- Concurrent access patterns and benefits
+- File system behavior and auxiliary files
+- Production considerations and trade-offs
+- Real-world scenarios and recommendations
+
+**What you'll learn:**
+- SQLite journal mode fundamentals
+- WAL mode advantages and disadvantages
+- Concurrency implications for GeoPackages
+- Performance characteristics comparison
+- When to choose each mode in production
+
 ## Running the Examples
 
 ### Prerequisites
@@ -200,6 +218,10 @@ dotnet run
 
 # Understand callbacks
 cd ../MapPiloteGeoPackageOptionalCallbackPattern
+dotnet run
+
+# Learn journal modes
+cd ../MapPiloteWALModeExample
 dotnet run
 ```
 

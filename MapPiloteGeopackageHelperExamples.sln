@@ -22,6 +22,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapPiloteLargeDatasetUpload
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapPiloteGeoPackageOptionalCallbackPattern", "MapPiloteGeoPackageOptionalCallbackPattern\MapPiloteGeoPackageOptionalCallbackPattern.csproj", "{50139645-AB0B-4B66-B563-96255A3ABD88}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapPiloteWALModeExample", "MapPiloteWALModeExample\MapPiloteWALModeExample.csproj", "{349BB1F1-63A9-B5B4-CD56-89AC5BC2B0D3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -52,6 +54,10 @@ Global
 		{50139645-AB0B-4B66-B563-96255A3ABD88}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{50139645-AB0B-4B66-B563-96255A3ABD88}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{50139645-AB0B-4B66-B563-96255A3ABD88}.Release|Any CPU.Build.0 = Release|Any CPU
+		{349BB1F1-63A9-B5B4-CD56-89AC5BC2B0D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{349BB1F1-63A9-B5B4-CD56-89AC5BC2B0D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{349BB1F1-63A9-B5B4-CD56-89AC5BC2B0D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{349BB1F1-63A9-B5B4-CD56-89AC5BC2B0D3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
