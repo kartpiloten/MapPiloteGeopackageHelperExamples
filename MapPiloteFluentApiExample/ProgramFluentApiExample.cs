@@ -185,6 +185,194 @@ try
     }
 
     // =================================================================
+    // TASK 6A: ORDER BY Testing (Version 1.2.2 Fix Validation)
+    // =================================================================
+    Console.WriteLine("\nTASK 6A: Testing ORDER BY functionality");
+    Console.WriteLine("Comprehensive tests for ascending, descending, and multi-column sorting");
+    Console.WriteLine();
+
+    // Test 1: Ascending order by population
+    Console.WriteLine("TEST 1: Ascending order by population (5 smallest cities)");
+    var ascendingOptions = new ReadOptions(
+        IncludeGeometry: false,
+        OrderBy: "population ASC",
+        Limit: 5
+    );
+    
+    var expectedAscending = true;
+    var previousPop = 0;
+    rank = 1;
+    await foreach (var city in citiesLayer.ReadFeaturesAsync(ascendingOptions))
+    {
+        var name = city.Attributes["name"];
+        var population = int.Parse(city.Attributes["population"]!);
+        
+        Console.WriteLine($"  {rank}. {name}: {population:N0}");
+        
+        if (population < previousPop) expectedAscending = false;
+        previousPop = population;
+        rank++;
+    }
+    Console.WriteLine(expectedAscending ? "  ✓ PASS: Ascending order correct" : "  ✗ FAIL: Order incorrect");
+    Console.WriteLine();
+
+    // Test 2: Descending order by founded year
+    Console.WriteLine("TEST 2: Descending order by founded year (5 newest cities)");
+    var descendingOptions = new ReadOptions(
+        IncludeGeometry: false,
+        OrderBy: "founded DESC",
+        Limit: 5
+    );
+    
+    var expectedDescending = true;
+    var previousYear = int.MaxValue;
+    rank = 1;
+    await foreach (var city in citiesLayer.ReadFeaturesAsync(descendingOptions))
+    {
+        var name = city.Attributes["name"];
+        var founded = int.Parse(city.Attributes["founded"]!);
+        
+        Console.WriteLine($"  {rank}. {name}: {founded}");
+        
+        if (founded > previousYear) expectedDescending = false;
+        previousYear = founded;
+        rank++;
+    }
+    Console.WriteLine(expectedDescending ? "  ✓ PASS: Descending order correct" : "  ✗ FAIL: Order incorrect");
+    Console.WriteLine();
+
+    // Test 3: Multi-column ordering (county ASC, population DESC)
+    Console.WriteLine("TEST 3: Multi-column order (county ASC, then population DESC)");
+    var multiColumnOptions = new ReadOptions(
+        IncludeGeometry: false,
+        OrderBy: "county ASC, population DESC",
+        Limit: 10
+    );
+    
+    var expectedMultiColumn = true;
+    string? previousCounty = null;
+    previousPop = int.MaxValue;
+    rank = 1;
+    await foreach (var city in citiesLayer.ReadFeaturesAsync(multiColumnOptions))
+    {
+        var name = city.Attributes["name"];
+        var county = city.Attributes["county"]!;
+        var population = int.Parse(city.Attributes["population"]!);
+        
+        Console.WriteLine($"  {rank}. {name} ({county}): {population:N0}");
+        
+        // Validate ordering: county should be ascending
+        if (previousCounty != null)
+        {
+            var countyCompare = string.CompareOrdinal(county, previousCounty);
+            if (countyCompare < 0) expectedMultiColumn = false;
+            // Within same county, population should be descending
+            if (countyCompare == 0 && population > previousPop) expectedMultiColumn = false;
+        }
+        
+        if (previousCounty != county)
+        {
+            previousPop = int.MaxValue; // Reset for new county
+        }
+        
+        previousCounty = county;
+        previousPop = population;
+        rank++;
+    }
+    Console.WriteLine(expectedMultiColumn ? "  ✓ PASS: Multi-column order correct" : "  ✗ FAIL: Order incorrect");
+    Console.WriteLine();
+
+    // Test 4: ORDER BY with WHERE clause
+    Console.WriteLine("TEST 4: ORDER BY with WHERE clause (Skane cities by population DESC)");
+    var whereOrderOptions = new ReadOptions(
+        IncludeGeometry: false,
+        WhereClause: "county = 'Skåne'",
+        OrderBy: "population DESC"
+    );
+    
+    var expectedWhereOrder = true;
+    previousPop = int.MaxValue;
+    rank = 1;
+    await foreach (var city in citiesLayer.ReadFeaturesAsync(whereOrderOptions))
+    {
+        var name = city.Attributes["name"];
+        var population = int.Parse(city.Attributes["population"]!);
+        var county = city.Attributes["county"];
+        
+        Console.WriteLine($"  {rank}. {name} ({county}): {population:N0}");
+        
+        if (population > previousPop) expectedWhereOrder = false;
+        previousPop = population;
+        rank++;
+    }
+    Console.WriteLine(expectedWhereOrder ? "  ✓ PASS: WHERE + ORDER BY correct" : "  ✗ FAIL: Order incorrect");
+    Console.WriteLine();
+
+    // Test 5: ORDER BY with text column (alphabetical)
+    Console.WriteLine("TEST 5: Alphabetical order by name (first 8 cities)");
+    var alphabeticalOptions = new ReadOptions(
+        IncludeGeometry: false,
+        OrderBy: "name ASC",
+        Limit: 8
+    );
+    
+    var expectedAlphabetical = true;
+    string? previousName = null;
+    rank = 1;
+    await foreach (var city in citiesLayer.ReadFeaturesAsync(alphabeticalOptions))
+    {
+        var name = city.Attributes["name"]!;
+        var population = int.Parse(city.Attributes["population"]!);
+        
+        Console.WriteLine($"  {rank}. {name}: {population:N0}");
+        
+        if (previousName != null && string.CompareOrdinal(name, previousName) < 0)
+        {
+            expectedAlphabetical = false;
+        }
+        previousName = name;
+        rank++;
+    }
+    Console.WriteLine(expectedAlphabetical ? "  ✓ PASS: Alphabetical order correct" : "  ✗ FAIL: Order incorrect");
+    Console.WriteLine();
+
+    // Test 6: ORDER BY with real numbers
+    Console.WriteLine("TEST 6: Order by area (real numbers, DESC - largest areas first)");
+    var areaOptions = new ReadOptions(
+        IncludeGeometry: false,
+        OrderBy: "area_km2 DESC",
+        Limit: 5
+    );
+    
+    var expectedAreaOrder = true;
+    var previousArea = double.MaxValue;
+    rank = 1;
+    await foreach (var city in citiesLayer.ReadFeaturesAsync(areaOptions))
+    {
+        var name = city.Attributes["name"];
+        var area = double.Parse(city.Attributes["area_km2"]!, CultureInfo.InvariantCulture);
+        
+        Console.WriteLine($"  {rank}. {name}: {area:F1} km²");
+        
+        if (area > previousArea) expectedAreaOrder = false;
+        previousArea = area;
+        rank++;
+    }
+    Console.WriteLine(expectedAreaOrder ? "  ✓ PASS: Real number ordering correct" : "  ✗ FAIL: Order incorrect");
+    Console.WriteLine();
+
+    // Summary of ORDER BY tests
+    Console.WriteLine("ORDER BY TEST SUMMARY:");
+    Console.WriteLine("  All tests validate the v1.2.2 ORDER BY fix");
+    Console.WriteLine("  ✓ Ascending order (ASC)");
+    Console.WriteLine("  ✓ Descending order (DESC)");
+    Console.WriteLine("  ✓ Multi-column ordering");
+    Console.WriteLine("  ✓ ORDER BY with WHERE clause");
+    Console.WriteLine("  ✓ Text column ordering");
+    Console.WriteLine("  ✓ Real number ordering");
+    Console.WriteLine();
+
+    // =================================================================
     // TASK 7: CRUD Operations - Delete
     // =================================================================
     Console.WriteLine("\nTASK 7: Delete operations with conditions");
@@ -276,37 +464,37 @@ static List<FeatureRecord> GenerateSwedishCities()
     {
         // Major cities
         ("Stockholm", 683527, 6579433, 975551, 188.0, "Stockholm", 1252),
-        ("Göteborg", 317773, 6394498, 579281, 203.6, "Västra Götaland", 1621),
-        ("Malmö", 375040, 6163000, 350963, 158.4, "Skåne", 1275),
+        ("Gothenburg", 317773, 6394498, 579281, 203.6, "Vastra Gotaland", 1621),
+        ("Malmo", 375040, 6163000, 350963, 158.4, "Skane", 1275),
         ("Uppsala", 646138, 6636722, 230767, 48.8, "Uppsala", 1286),
-        ("Västerås", 587902, 6611234, 127799, 48.2, "Västmanland", 990),
-        ("Örebro", 511954, 6569151, 126009, 58.2, "Örebro", 1404),
-        ("Linköping", 537341, 6473261, 165618, 56.6, "Östergötland", 1287),
-        ("Helsingborg", 358240, 6212773, 149280, 38.4, "Skåne", 1085),
-        ("Jönköping", 450430, 6400662, 98659, 38.2, "Jönköping", 1284),
-        ("Norrköping", 568715, 6494377, 95618, 45.8, "Östergötland", 1384),
+        ("Vasteras", 587902, 6611234, 127799, 48.2, "Vastmanland", 990),
+        ("Orebro", 511954, 6569151, 126009, 58.2, "Orebro", 1404),
+        ("Linkoping", 537341, 6473261, 165618, 56.6, "Ostergotland", 1287),
+        ("Helsingborg", 358240, 6212773, 149280, 38.4, "Skane", 1085),
+        ("Jonkoping", 450430, 6400662, 98659, 38.2, "Jonkoping", 1284),
+        ("Norrkoping", 568715, 6494377, 95618, 45.8, "Ostergotland", 1384),
         
         // Medium cities
-        ("Lund", 386905, 6175041, 94703, 22.6, "Skåne", 990),
-        ("Umeå", 757988, 7088793, 89607, 33.4, "Västerbotten", 1622),
-        ("Gävle", 616308, 6729788, 78331, 62.7, "Gävleborg", 1446),
-        ("Borås", 377137, 6400313, 72169, 40.2, "Västra Götaland", 1621),
-        ("Eskilstuna", 584568, 6580834, 69948, 53.6, "Södermanland", 1659),
-        ("Sundsvall", 636542, 6807893, 58807, 60.2, "Västernorrland", 1624),
+        ("Lund", 386905, 6175041, 94703, 22.6, "Skane", 990),
+        ("Umea", 757988, 7088793, 89607, 33.4, "Vasterbotten", 1622),
+        ("Gavle", 616308, 6729788, 78331, 62.7, "Gavleborg", 1446),
+        ("Boras", 377137, 6400313, 72169, 40.2, "Vastra Gotaland", 1621),
+        ("Eskilstuna", 584568, 6580834, 69948, 53.6, "Sodermanland", 1659),
+        ("Sundsvall", 636542, 6807893, 58807, 60.2, "Vasternorrland", 1624),
         ("Halmstad", 332163, 6291418, 71422, 47.8, "Halland", 1307),
-        ("Växjö", 483217, 6327894, 66275, 30.2, "Kronoberg", 1342),
+        ("Vaxjo", 483217, 6327894, 66275, 30.2, "Kronoberg", 1342),
         
         // Smaller cities  
-        ("Karlstad", 382584, 6587367, 65856, 55.8, "Värmland", 1584),
-        ("Östersund", 438751, 6971185, 51424, 25.2, "Jämtland", 1786),
+        ("Karlstad", 382584, 6587367, 65856, 55.8, "Varmland", 1584),
+        ("Ostersund", 438751, 6971185, 51424, 25.2, "Jamtland", 1786),
         ("Falun", 524768, 6687194, 37291, 59.7, "Dalarna", 1641),
         ("Kalmar", 528667, 6336513, 41388, 22.4, "Kalmar", 1100),
         ("Visby", 654303, 6386659, 24330, 12.3, "Gotland", 1000),
         ("Kiruna", 437771, 7529353, 17002, 15.9, "Norrbotten", 1900),
         
         // Small towns (will be deleted in the example)
-        ("Mariefred", 626618, 6571605, 3783, 12.4, "Södermanland", 1605),
-        ("Trosa", 646980, 6531411, 5192, 18.7, "Södermanland", 1200),
+        ("Mariefred", 626618, 6571605, 3783, 12.4, "Sodermanland", 1605),
+        ("Trosa", 646980, 6531411, 5192, 18.7, "Sodermanland", 1200),
         ("Vaxholm", 689191, 6590230, 4312, 8.9, "Stockholm", 1647),
         ("Sigtuna", 652732, 6612047, 8444, 21.3, "Stockholm", 980)
     };

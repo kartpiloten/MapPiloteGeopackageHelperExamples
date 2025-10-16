@@ -84,6 +84,8 @@ Console.WriteLine("STEP 3: Defining table schema and creating a spatial layer");
 Console.WriteLine("  Schemas define what attributes (columns) each feature will have");
 
 // Define what information we want to store about each location
+// Note that the setup below allows upper-case names. Consider only use lower-case names
+// because of some databases way of handling uppercase letters.
 var tableSchema = new Dictionary<string, string>(StringComparer.Ordinal)
 {
     ["location_name"] = "TEXT",      // Name of the place
@@ -130,15 +132,15 @@ CGeopackageAddDataHelper.AddPointToGeoPackage(geoPackageFile, layerName, stockho
 Console.WriteLine("  SUCCESS: Stockholm added successfully");
 
 // Add another point
-var goteborgPoint = new Point(317773, 6394498);
-var goteborgAttributes = new[] { "Göteborg", "City", "579281", "20360", "Sweden's second largest city" };
+var gothenburgPoint = new Point(317773, 6394498);
+var gothenburgAttributes = new[] { "Gothenburg", "City", "579281", "20360", "Sweden's second largest city" };
 
-Console.WriteLine("  Adding Göteborg:");
-Console.WriteLine($"    Coordinates: ({goteborgPoint.X:F0}, {goteborgPoint.Y:F0})");
-Console.WriteLine($"    Population: {goteborgAttributes[2]}");
+Console.WriteLine("  Adding Gothenburg:");
+Console.WriteLine($"    Coordinates: ({gothenburgPoint.X:F0}, {gothenburgPoint.Y:F0})");
+Console.WriteLine($"    Population: {gothenburgAttributes[2]}");
 
-CGeopackageAddDataHelper.AddPointToGeoPackage(geoPackageFile, layerName, goteborgPoint, goteborgAttributes);
-Console.WriteLine("  SUCCESS: Göteborg added successfully");
+CGeopackageAddDataHelper.AddPointToGeoPackage(geoPackageFile, layerName, gothenburgPoint, gothenburgAttributes);
+Console.WriteLine("  SUCCESS: Gothenburg added successfully");
 Console.WriteLine();
 
 // =================================================================  
@@ -151,10 +153,10 @@ Console.WriteLine("  For multiple features, bulk operations are much faster");
 var bulkFeatures = new List<FeatureRecord>
 {
     new FeatureRecord(
-        Geometry: new Point(375040, 6163000), // Malmö
+        Geometry: new Point(375040, 6163000), // Malmo
         Attributes: new Dictionary<string, string?>(StringComparer.Ordinal)
         {
-            ["location_name"] = "Malmö",
+            ["location_name"] = "Malmo",
             ["category"] = "City", 
             ["population"] = "350963",
             ["area_hectares"] = "15840",
@@ -173,10 +175,10 @@ var bulkFeatures = new List<FeatureRecord>
         }),
         
     new FeatureRecord(
-        Geometry: new Point(511954, 6569151), // Örebro
+        Geometry: new Point(511954, 6569151), // Orebro
         Attributes: new Dictionary<string, string?>(StringComparer.Ordinal)
         {
-            ["location_name"] = "Örebro",
+            ["location_name"] = "Orebro",
             ["category"] = "City",
             ["population"] = "126009",
             ["area_hectares"] = "5820", 
