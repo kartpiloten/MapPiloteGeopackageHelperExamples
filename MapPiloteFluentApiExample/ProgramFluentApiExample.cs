@@ -173,14 +173,18 @@ try
     int rank = 1;
     await foreach (var city in citiesLayer.ReadFeaturesAsync(topCitiesOptions))
     {
-        var point = city.Geometry as Point;
+        // AFTER (C# 12): pattern matching to safely deconstruct Point
+        var (x, y) = city.Geometry is Point { X: var px, Y: var py } 
+            ? (px, py) 
+            : (double.NaN, double.NaN);
+
         var name = city.Attributes["name"];
         var population = int.Parse(city.Attributes["population"]!);
         var county = city.Attributes["county"];
         
         Console.WriteLine($"  {rank}. {name} ({county})");
         Console.WriteLine($"      Population: {population:N0}");
-        Console.WriteLine($"      Coordinates: ({point?.X:F0}, {point?.Y:F0})");
+        Console.WriteLine($"      Coordinates: ({x:F0}, {y:F0})");
         rank++;
     }
 
@@ -459,45 +463,44 @@ catch (Exception ex)
 
 static List<FeatureRecord> GenerateSwedishCities()
 {
-    // Real Swedish cities with accurate SWEREF99 TM coordinates
-    var cityData = new List<(string Name, double X, double Y, int Population, double AreaKm2, string County, int Founded)>
-    {
+
+    List<City> cityData = [
         // Major cities
-        ("Stockholm", 683527, 6579433, 975551, 188.0, "Stockholm", 1252),
-        ("Gothenburg", 317773, 6394498, 579281, 203.6, "Vastra Gotaland", 1621),
-        ("Malmo", 375040, 6163000, 350963, 158.4, "Skane", 1275),
-        ("Uppsala", 646138, 6636722, 230767, 48.8, "Uppsala", 1286),
-        ("Vasteras", 587902, 6611234, 127799, 48.2, "Vastmanland", 990),
-        ("Orebro", 511954, 6569151, 126009, 58.2, "Orebro", 1404),
-        ("Linkoping", 537341, 6473261, 165618, 56.6, "Ostergotland", 1287),
-        ("Helsingborg", 358240, 6212773, 149280, 38.4, "Skane", 1085),
-        ("Jonkoping", 450430, 6400662, 98659, 38.2, "Jonkoping", 1284),
-        ("Norrkoping", 568715, 6494377, 95618, 45.8, "Ostergotland", 1384),
+        new("Stockholm", 683527, 6579433, 975551, 188.0, "Stockholm", 1252),
+        new("Gothenburg", 317773, 6394498, 579281, 203.6, "Vastra Gotaland", 1621),
+        new("Malmo", 375040, 6163000, 350963, 158.4, "Skane", 1275),
+        new("Uppsala", 646138, 6636722, 230767, 48.8, "Uppsala", 1286),
+        new("Vasteras", 587902, 6611234, 127799, 48.2, "Vastmanland", 990),
+        new("Orebro", 511954, 6569151, 126009, 58.2, "Orebro", 1404),
+        new("Linkoping", 537341, 6473261, 165618, 56.6, "Ostergotland", 1287),
+        new("Helsingborg", 358240, 6212773, 149280, 38.4, "Skane", 1085),
+        new("Jonkoping", 450430, 6400662, 98659, 38.2, "Jonkoping", 1284),
+        new("Norrkoping", 568715, 6494377, 95618, 45.8, "Ostergotland", 1384),
         
         // Medium cities
-        ("Lund", 386905, 6175041, 94703, 22.6, "Skane", 990),
-        ("Umea", 757988, 7088793, 89607, 33.4, "Vasterbotten", 1622),
-        ("Gavle", 616308, 6729788, 78331, 62.7, "Gavleborg", 1446),
-        ("Boras", 377137, 6400313, 72169, 40.2, "Vastra Gotaland", 1621),
-        ("Eskilstuna", 584568, 6580834, 69948, 53.6, "Sodermanland", 1659),
-        ("Sundsvall", 636542, 6807893, 58807, 60.2, "Vasternorrland", 1624),
-        ("Halmstad", 332163, 6291418, 71422, 47.8, "Halland", 1307),
-        ("Vaxjo", 483217, 6327894, 66275, 30.2, "Kronoberg", 1342),
+        new("Lund", 386905, 6175041, 94703, 22.6, "Skane", 990),
+        new("Umea", 757988, 7088793, 89607, 33.4, "Vasterbotten", 1622),
+        new("Gavle", 616308, 6729788, 78331, 62.7, "Gavleborg", 1446),
+        new("Boras", 377137, 6400313, 72169, 40.2, "Vastra Gotaland", 1621),
+        new("Eskilstuna", 584568, 6580834, 69948, 53.6, "Sodermanland", 1659),
+        new("Sundsvall", 636542, 6807893, 58807, 60.2, "Vasternorrland", 1624),
+        new("Halmstad", 332163, 6291418, 71422, 47.8, "Halland", 1307),
+        new("Vaxjo", 483217, 6327894, 66275, 30.2, "Kronoberg", 1342),
         
         // Smaller cities  
-        ("Karlstad", 382584, 6587367, 65856, 55.8, "Varmland", 1584),
-        ("Ostersund", 438751, 6971185, 51424, 25.2, "Jamtland", 1786),
-        ("Falun", 524768, 6687194, 37291, 59.7, "Dalarna", 1641),
-        ("Kalmar", 528667, 6336513, 41388, 22.4, "Kalmar", 1100),
-        ("Visby", 654303, 6386659, 24330, 12.3, "Gotland", 1000),
-        ("Kiruna", 437771, 7529353, 17002, 15.9, "Norrbotten", 1900),
+        new("Karlstad", 382584, 6587367, 65856, 55.8, "Varmland", 1584),
+        new("Ostersund", 438751, 6971185, 51424, 25.2, "Jamtland", 1786),
+        new("Falun", 524768, 6687194, 37291, 59.7, "Dalarna", 1641),
+        new("Kalmar", 528667, 6336513, 41388, 22.4, "Kalmar", 1100),
+        new("Visby", 654303, 6386659, 24330, 12.3, "Gotland", 1000),
+        new("Kiruna", 437771, 7529353, 17002, 15.9, "Norrbotten", 1900),
         
         // Small towns (will be deleted in the example)
-        ("Mariefred", 626618, 6571605, 3783, 12.4, "Sodermanland", 1605),
-        ("Trosa", 646980, 6531411, 5192, 18.7, "Sodermanland", 1200),
-        ("Vaxholm", 689191, 6590230, 4312, 8.9, "Stockholm", 1647),
-        ("Sigtuna", 652732, 6612047, 8444, 21.3, "Stockholm", 980)
-    };
+        new("Mariefred", 626618, 6571605, 3783, 12.4, "Sodermanland", 1605),
+        new("Trosa", 646980, 6531411, 5192, 18.7, "Sodermanland", 1200),
+        new("Vaxholm", 689191, 6590230, 4312, 8.9, "Stockholm", 1647),
+        new("Sigtuna", 652732, 6612047, 8444, 21.3, "Stockholm", 980)
+    ];
 
     return cityData.Select(city => new FeatureRecord(
         new Point(city.X, city.Y),
@@ -511,3 +514,6 @@ static List<FeatureRecord> GenerateSwedishCities()
         }
     )).ToList();
 }
+
+// Small primary-constructor record to model city input data
+file sealed record City(string Name, double X, double Y, int Population, double AreaKm2, string County, int Founded);

@@ -107,11 +107,11 @@ try
         Console.WriteLine($"   Data type: {layer.DataType}");
         Console.WriteLine($"   Geometry type: {layer.GeometryType ?? "<none>"}");
         Console.WriteLine($"   Geometry column: {layer.GeometryColumn ?? "<none>"}");
-        Console.WriteLine($"   Coordinate system (SRID): {layer.Srid?.ToString() ?? "<unknown>"}");
+        Console.WriteLine($"   Coordinate system (SRID): {(layer.Srid.HasValue ? layer.Srid.ToString() : "<unknown>")}");
         Console.WriteLine();
 
         // Spatial extent information
-        if (layer.MinX.HasValue && layer.MaxX.HasValue)
+        if (layer is { MinX: not null, MaxX: not null, MinY: not null, MaxY: not null })
         {
             Console.WriteLine($"SPATIAL EXTENT:");
             Console.WriteLine($"   Southwest corner: ({layer.MinX:F2}, {layer.MinY:F2})");
@@ -188,7 +188,7 @@ try
         {
             var firstCol = attributeColumns[0];
             Console.WriteLine($"       // Access attribute example:");
-            Console.WriteLine($"       var {firstCol.Name} = attributes[\"{firstCol.Name}\"];");
+            Console.WriteLine($"       var {firstCol.Name} = attributes[\"{firstCol.Name}\"];\n");
         }
         Console.WriteLine($"   }}");
         Console.WriteLine();
@@ -211,7 +211,7 @@ try
             {
                 recordCount++;
                 
-                // Format geometry summary
+                // Format geometry summary (already uses switch expression)
                 string geometryInfo = feature.Geometry switch
                 {
                     NetTopologySuite.Geometries.Point pt => 
@@ -285,7 +285,8 @@ static string ToPascalCase(string input)
     if (string.IsNullOrEmpty(input)) return input;
     
     // Split on common separators and capitalize each part
-    var parts = input.Split(new[] { '_', ' ', '-', '.' }, StringSplitOptions.RemoveEmptyEntries);
+    char[] separators = ['_', ' ', '-', '.'];
+    var parts = input.Split(separators, StringSplitOptions.RemoveEmptyEntries);
     return string.Concat(parts.Select(part => 
         char.ToUpperInvariant(part[0]) + part.Substring(1).ToLowerInvariant()));
 }
@@ -303,15 +304,10 @@ static string MapSqliteTypeToClr(string sqliteType, bool isNotNull)
         _ => "string" // Default for unknown types
     };
 
-    // Handle nullability
-    if (clrType == "string" || clrType == "byte[]")
+    // Handle nullability with pattern matching (C# 12 defaults kept)
+    return clrType switch
     {
-        // Reference types - add ? if nullable
-        return isNotNull ? clrType : clrType + "?";
-    }
-    else
-    {
-        // Value types - add ? if nullable  
-        return isNotNull ? clrType : clrType + "?";
-    }
+        "string" or "byte[]" => isNotNull ? clrType : clrType + "?",
+        _ => isNotNull ? clrType : clrType + "?"
+    };
 }

@@ -222,7 +222,7 @@ static List<FeatureRecord> GenerateTestFeatures(int count)
     const double maxX = 850000.0, maxY = 7400000.0;
     
     var categories = new[] { "Residential", "Commercial", "Industrial", "Agricultural", "Forest" };
-    var notes = new[] { "High priority", "Standard", "Low priority", null }; // Include nulls
+    var notes = new string?[] { "High priority", "Standard", "Low priority", null };
     
     for (int i = 0; i < count; i++)
     {
