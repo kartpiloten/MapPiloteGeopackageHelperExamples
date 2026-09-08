@@ -36,6 +36,7 @@ using System.Globalization;
 //  5) CRUD operations (Create, Read, Update, Delete)
 //  6) Metadata extraction and spatial analysis
 //  7) Error handling and best practices
+//  8) Geometry type validation (coming soon)
 // Perfect introduction to the modern async/await API!
 // =============================================================
 
@@ -123,6 +124,8 @@ try
     Console.WriteLine("  • BatchSize: 50 (groups inserts for performance)");
     Console.WriteLine("  • CreateSpatialIndex: true (enables fast spatial queries)");  
     Console.WriteLine("  • ConflictPolicy: Ignore (skip duplicates without error)");
+    // TODO: Uncomment when library adds StrictGeometryType support
+    // Console.WriteLine("  • StrictGeometryType: false (default - allows flexible geometry types)");
 
     await citiesLayer.BulkInsertAsync(
         cities,
@@ -130,6 +133,7 @@ try
             BatchSize: 50,
             CreateSpatialIndex: true,
             ConflictPolicy: ConflictPolicy.Ignore
+            // TODO: Add when library supports: StrictGeometryType: false
         ),
         progress);
 
@@ -374,6 +378,67 @@ try
     Console.WriteLine("  ✓ ORDER BY with WHERE clause");
     Console.WriteLine("  ✓ Text column ordering");
     Console.WriteLine("  ✓ Real number ordering");
+    Console.WriteLine();
+
+    // =================================================================
+    // TASK 6B: Geometry Type Validation (Coming Soon)
+    // =================================================================
+    Console.WriteLine("\nTASK 6B: Geometry type validation (Preview)");
+    Console.WriteLine("StrictGeometryType will enforce that inserted geometries match the layer's declared type");
+    Console.WriteLine("NOTE: This feature is coming in a future library version");
+    Console.WriteLine();
+
+    // Create a dedicated layer for geometry validation demos
+    var validationSchema = new Dictionary<string, string>
+    {
+        ["name"] = "TEXT",
+        ["description"] = "TEXT"
+    };
+
+    var validationLayer = await geoPackage.EnsureLayerAsync("geometry_validation_test", validationSchema, srid);
+    Console.WriteLine("Created test layer 'geometry_validation_test' for validation demos");
+    Console.WriteLine();
+
+    // Demo: Insert valid Point geometries
+    Console.WriteLine("Demo: Inserting valid POINT geometries");
+    var validPoints = new List<FeatureRecord>
+    {
+        new(new Point(683527, 6579433), new Dictionary<string, string?>(StringComparer.Ordinal)
+        {
+            ["name"] = "Valid Point 1",
+            ["description"] = "This is a valid Point geometry"
+        }),
+        new(new Point(317773, 6394498), new Dictionary<string, string?>(StringComparer.Ordinal)
+        {
+            ["name"] = "Valid Point 2",
+            ["description"] = "Another valid Point geometry"
+        })
+    };
+
+    await validationLayer.BulkInsertAsync(
+        validPoints,
+        new BulkInsertOptions(BatchSize: 10),
+        // TODO: Add when library supports: StrictGeometryType: true
+        null);
+    
+    var validCount = await validationLayer.CountAsync();
+    Console.WriteLine($"  ✓ Successfully inserted {validCount} Point geometries");
+    Console.WriteLine();
+
+    // Show what will be possible with StrictGeometryType
+    Console.WriteLine("COMING SOON - StrictGeometryType option:");
+    Console.WriteLine("  When StrictGeometryType: true is enabled:");
+    Console.WriteLine("    ✓ Validates geometry types match the layer's declared type");
+    Console.WriteLine("    ✓ Rejects entire batch if any geometry type is invalid");
+    Console.WriteLine("    ✓ Provides clear error messages for debugging");
+    Console.WriteLine("    ✓ Recommended for production data pipelines");
+    Console.WriteLine();
+    Console.WriteLine("  Example usage (once available):");
+    Console.WriteLine("    new BulkInsertOptions(");
+    Console.WriteLine("        BatchSize: 50,");
+    Console.WriteLine("        CreateSpatialIndex: true,");
+    Console.WriteLine("        StrictGeometryType: true  // Validate geometry types");
+    Console.WriteLine("    )");
     Console.WriteLine();
 
     // =================================================================

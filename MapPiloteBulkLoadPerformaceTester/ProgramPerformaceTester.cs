@@ -32,6 +32,7 @@ using System.Globalization;
 // This tutorial demonstrates performance differences between:
 //  1) Single-row inserts (traditional approach)
 //  2) Bulk inserts (modern efficient approach)
+//  3) Fluent API with spatial indexing
 // Learn when and why to use bulk operations for better performance!
 // =============================================================
 
@@ -207,6 +208,64 @@ Console.WriteLine($"   • {Path.GetFileName(singleInsertPath)} (single-row meth
 Console.WriteLine($"   • {Path.GetFileName(bulkInsertPath)} (bulk insert method)");
 Console.WriteLine();
 Console.WriteLine("RECOMMENDATION: Always use bulk operations for multiple inserts!");
+Console.WriteLine();
+
+// =================================================================
+// METHOD 3: FLUENT API WITH SPATIAL INDEXING (Modern Approach)
+// =================================================================
+Console.WriteLine("5. METHOD 3: FLUENT API WITH SPATIAL INDEXING");
+Console.WriteLine("   Modern async API with spatial index creation");
+Console.WriteLine("   TODO: StrictGeometryType option coming soon for geometry validation");
+Console.WriteLine();
+
+string fluentInsertPath = Path.Combine(Environment.CurrentDirectory, "FluentAPI_Performance.gpkg");
+TryDelete(fluentInsertPath);
+
+Console.WriteLine("   Creating GeoPackage with fluent API...");
+stopwatch.Restart();
+
+using (var geoPackage = await GeoPackage.OpenAsync(fluentInsertPath, SRID))
+{
+    var layer = await geoPackage.EnsureLayerAsync(LAYER_NAME, schema, SRID);
+    
+    // Fluent bulk insert with spatial index
+    // TODO: Add StrictGeometryType: true when library supports geometry validation
+    await layer.BulkInsertAsync(
+        testFeatures,
+        new BulkInsertOptions(
+            BatchSize: 500,
+            CreateSpatialIndex: true
+        ),
+        null  // No progress callback for performance comparison
+    );
+}
+
+stopwatch.Stop();
+var fluentInsertTime = stopwatch.ElapsedMilliseconds;
+var fluentInsertRate = TEST_COUNT / Math.Max(stopwatch.Elapsed.TotalSeconds, 0.001);
+var fluentInsertSize = new FileInfo(fluentInsertPath).Length;
+
+Console.WriteLine($"   SUCCESS: Fluent API bulk insert completed");
+Console.WriteLine($"   Results:");
+Console.WriteLine($"     Time: {fluentInsertTime:N0} ms (includes spatial index creation)");
+Console.WriteLine($"     Rate: {fluentInsertRate:F0} inserts/second");
+Console.WriteLine($"     File size: {fluentInsertSize / 1024.0:F1} KB");
+Console.WriteLine();
+
+Console.WriteLine("FLUENT API BENEFITS:");
+Console.WriteLine("   • CreateSpatialIndex: true creates index automatically");
+Console.WriteLine("   • Async/await pattern for responsive applications");
+Console.WriteLine("   • IProgress<T> support for progress callbacks");
+Console.WriteLine("   • COMING SOON: StrictGeometryType for geometry validation");
+Console.WriteLine();
+
+Console.WriteLine($"FILES CREATED:");
+Console.WriteLine($"   • {Path.GetFileName(singleInsertPath)} (single-row method)");
+Console.WriteLine($"   • {Path.GetFileName(bulkInsertPath)} (bulk insert method)");
+Console.WriteLine($"   • {Path.GetFileName(fluentInsertPath)} (fluent API with spatial index)");
+Console.WriteLine();
+Console.WriteLine("TIP: Watch for StrictGeometryType option in upcoming library versions!");
+Console.WriteLine();
 
 // =================================================================
 // Helper Methods

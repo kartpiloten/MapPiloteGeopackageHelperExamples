@@ -43,7 +43,61 @@ Console.WriteLine();
 
 // Locate the sample GeoPackage file
 string workDir = Environment.CurrentDirectory;
-string sampleGpkg = Path.Combine(workDir, "Data", "AdmBordersSweden.gpkg");
+string dataDir = Path.Combine(workDir, "Data");
+string sampleGpkg = Path.Combine(dataDir, "AdmBordersSweden.gpkg");
+
+// Try to auto-detect a GeoPackage if the sample file is missing
+if (!File.Exists(sampleGpkg))
+{
+    // Prefer well-known files created by other examples
+    var preferred = new []
+    {
+        Path.Combine(workDir, "MyFirstGeoPackage.gpkg"),
+        Path.Combine(workDir, "FluentAPI_Tutorial.gpkg"),
+        Path.Combine(workDir, "OptionalCallbackExample.gpkg"),
+        Path.Combine(workDir, "LargeDataset_WithIndex.gpkg"),
+        Path.Combine(workDir, "LargeDataset_NoIndex.gpkg"),
+        Path.Combine(workDir, "SingleInsert_Performance.gpkg"),
+        Path.Combine(workDir, "BulkInsert_Performance.gpkg"),
+        Path.Combine(workDir, "DeleteMode_Example.gpkg"),
+        Path.Combine(workDir, "WALMode_Example.gpkg"),
+    };
+
+    var firstExisting = preferred.FirstOrDefault(File.Exists);
+
+    if (firstExisting is null)
+    {
+        // Fallback: pick the most recent .gpkg in the working directory
+        var anyGpkg = Directory.Exists(workDir)
+            ? Directory.EnumerateFiles(workDir, "*.gpkg", SearchOption.TopDirectoryOnly)
+                .Select(p => new FileInfo(p))
+                .OrderByDescending(fi => fi.LastWriteTimeUtc)
+                .FirstOrDefault()?.FullName
+            : null;
+
+        if (anyGpkg is not null)
+        {
+            Console.WriteLine("INFO: Sample file not found. Auto-selecting the most recent GeoPackage in the working directory.");
+            sampleGpkg = anyGpkg;
+        }
+        else
+        {
+            Console.WriteLine("ERROR: SAMPLE FILE NOT FOUND");
+            Console.WriteLine($"Expected location: {sampleGpkg}");
+            Console.WriteLine();
+            Console.WriteLine("No generated GeoPackages were found to inspect.");
+            Console.WriteLine("Hint: Run one of the example projects to create a .gpkg file, e.g. HelloWorld or FluentApiExample.");
+            Console.WriteLine();
+            Console.WriteLine("Alternative: Place any .gpkg file in the working directory or in the Data folder and rerun.");
+            return;
+        }
+    }
+    else
+    {
+        Console.WriteLine("INFO: Sample file not found. Auto-selecting an available GeoPackage created by other examples.");
+        sampleGpkg = firstExisting;
+    }
+}
 
 Console.WriteLine("=== TUTORIAL OVERVIEW ===");
 Console.WriteLine("This tutorial will teach you to:");
@@ -53,20 +107,6 @@ Console.WriteLine("• Examine column schemas and data types");
 Console.WriteLine("• Generate C# code for working with the data");
 Console.WriteLine("• Browse sample records to understand content");
 Console.WriteLine();
-
-// Check if sample file exists
-if (!File.Exists(sampleGpkg))
-{
-    Console.WriteLine("ERROR: SAMPLE FILE NOT FOUND");
-    Console.WriteLine($"Expected location: {sampleGpkg}");
-    Console.WriteLine();
-    Console.WriteLine("This tutorial requires the sample data file to demonstrate schema inspection.");
-    Console.WriteLine("Please ensure the AdmBordersSweden.gpkg file is in the Data folder.");
-    Console.WriteLine();
-    Console.WriteLine("Alternative: Create your own GeoPackage using other examples");
-    Console.WriteLine("   and replace the file path above to inspect your own data!");
-    return;
-}
 
 Console.WriteLine("INSPECTING GEOPACKAGE");
 Console.WriteLine($"File: {Path.GetFileName(sampleGpkg)}");

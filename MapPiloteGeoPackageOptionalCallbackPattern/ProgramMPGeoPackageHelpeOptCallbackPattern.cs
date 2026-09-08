@@ -246,6 +246,41 @@ try
     Console.WriteLine();
 
     // ========================================================================
+    // SCENARIO 6: Geometry Type Validation (Preview)
+    // ========================================================================
+    Console.WriteLine("## Scenario 6: Geometry Type Validation (Coming Soon)");
+    Console.WriteLine("Combine progress callbacks with geometry validation for robust data pipelines:");
+    Console.WriteLine();
+
+    var layer6 = await geoPackage.EnsureLayerAsync("validated_points", schema, srid);
+    var validatedDataset = GenerateSampleData(200);
+
+    Console.WriteLine("Inserting 200 points with progress tracking...");
+    
+    var validationProgress = new Progress<BulkProgress>(p =>
+    {
+        if (p.Processed % 50 == 0 || p.IsComplete)
+        {
+            Console.WriteLine($"  Insert progress: {p.PercentComplete:F0}% ({p.Processed}/{p.Total})");
+        }
+    });
+
+    // TODO: Add StrictGeometryType: true when library supports it
+    await layer6.BulkInsertAsync(
+        validatedDataset,
+        new BulkInsertOptions(BatchSize: 50),
+        validationProgress
+    );
+
+    var validatedCount = await layer6.CountAsync();
+    Console.WriteLine($"SUCCESS: Inserted {validatedCount} Point geometries");
+    Console.WriteLine();
+    Console.WriteLine("COMING SOON: StrictGeometryType option will add geometry type validation");
+    Console.WriteLine("  Example: new BulkInsertOptions(BatchSize: 50, StrictGeometryType: true)");
+    Console.WriteLine("  This will validate all geometries match the layer's declared type before insert.");
+    Console.WriteLine();
+
+    // ========================================================================
     // SUMMARY: Benefits of Optional Callback Pattern
     // ========================================================================
     Console.WriteLine("## Summary: Benefits of Optional Callback Pattern");
@@ -264,7 +299,8 @@ try
     var totalCount3 = await layer3.CountAsync();
     var totalCount4 = await layer4.CountAsync();
     var totalCount5 = await layer5.CountAsync();
-    var grandTotal = totalCount1 + totalCount2 + totalCount3 + totalCount4 + totalCount5;
+    var totalCount6 = await layer6.CountAsync();
+    var grandTotal = totalCount1 + totalCount2 + totalCount3 + totalCount4 + totalCount5 + totalCount6;
     
     Console.WriteLine($"Records inserted per scenario:");
     Console.WriteLine($"  Scenario 1 (silent):     {totalCount1:N0} records");
@@ -272,6 +308,7 @@ try
     Console.WriteLine($"  Scenario 3 (visual):     {totalCount3:N0} records");
     Console.WriteLine($"  Scenario 4 (business):   {totalCount4:N0} records");
     Console.WriteLine($"  Scenario 5 (conditional): {totalCount5:N0} records");
+    Console.WriteLine($"  Scenario 6 (validated):   {totalCount6:N0} records");
     Console.WriteLine($"  TOTAL across all scenarios: {grandTotal:N0} records");
     Console.WriteLine();
     Console.WriteLine($"GeoPackage saved to: {Path.GetFullPath(gpkgPath)}");

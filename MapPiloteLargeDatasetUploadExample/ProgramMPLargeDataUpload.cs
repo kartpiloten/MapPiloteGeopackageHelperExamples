@@ -73,6 +73,7 @@ using (var geoPackage = await GeoPackage.OpenAsync(gpkgWithoutIndex, SRID))
     var layer = await geoPackage.EnsureLayerAsync("monitoring_stations", schema, SRID);
     
     // Bulk insert WITHOUT spatial index
+    // TODO: Add StrictGeometryType: true when library supports it for geometry validation
     await layer.BulkInsertAsync(
         monitoringStations,
         new BulkInsertOptions(BatchSize: 1000, CreateSpatialIndex: false),
@@ -91,6 +92,7 @@ using (var geoPackage = await GeoPackage.OpenAsync(gpkgWithIndex, SRID))
     var layer = await geoPackage.EnsureLayerAsync("monitoring_stations", schema, SRID);
     
     // Bulk insert WITH spatial index - MapPiloteGeopackageHelper handles the indexing
+    // TODO: Add StrictGeometryType: true when library supports it for geometry validation
     await layer.BulkInsertAsync(
         monitoringStations,
         new BulkInsertOptions(BatchSize: 1000, CreateSpatialIndex: true),
@@ -137,6 +139,8 @@ Console.WriteLine($"  - {Path.GetFileName(gpkgWithoutIndex)} (no spatial index)"
 Console.WriteLine($"  - {Path.GetFileName(gpkgWithIndex)} (with spatial index)");
 Console.WriteLine("\nKey takeaway: Spatial indexes dramatically improve query performance on large datasets!");
 Console.WriteLine("Use CreateSpatialIndex: true in BulkInsertOptions for better performance.");
+// TODO: Uncomment when library adds StrictGeometryType support
+// Console.WriteLine("Use StrictGeometryType: true for production data pipelines to ensure data integrity.");
 
 // =============================================================
 // Helper Methods
